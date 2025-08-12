@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BikeMizer - Customização de Bicicletas</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-bicycle"></i>
+                <h1>BikeMizer</h1>
+            </div>
+            <nav class="nav">
+                <a href="#customizer" class="nav-link">Customizar</a>
+                <a href="#gallery" class="nav-link">Galeria</a>
+                <a href="#about" class="nav-link">Sobre</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Personalize sua bicicleta</h2>
+                    <p>Crie uma bicicleta única com cores personalizadas e adesivos exclusivos</p>
+                    <a href="#customizer" class="btn btn-primary">Começar a customizar</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="customizer" class="customizer">
+            <div class="container">
+                <h2 class="section-title">Customizador de Bicicletas</h2>
+                
+                <div class="customizer-container">
+                    <div class="bike-preview">
+                        <div class="bike-canvas">
+                            <canvas id="bikeCanvas" width="600" height="400"></canvas>
+                            <div class="bike-controls">
+                                <button id="resetBtn" class="btn btn-secondary">
+                                    <i class="fas fa-undo"></i> Resetar
+                                </button>
+                                <button id="saveBtn" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Salvar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="customization-panel">
+                        <div class="panel-section">
+                            <h3><i class="fas fa-palette"></i> Cores</h3>
+                            <div class="color-options">
+                                <div class="color-option" data-color="#ff0000" style="background-color: #ff0000;"></div>
+                                <div class="color-option" data-color="#00ff00" style="background-color: #00ff00;"></div>
+                                <div class="color-option" data-color="#0000ff" style="background-color: #0000ff;"></div>
+                                <div class="color-option" data-color="#ffff00" style="background-color: #ffff00;"></div>
+                                <div class="color-option" data-color="#ff00ff" style="background-color: #ff00ff;"></div>
+                                <div class="color-option" data-color="#00ffff" style="background-color: #00ffff;"></div>
+                                <div class="color-option" data-color="#ff8800" style="background-color: #ff8800;"></div>
+                                <div class="color-option" data-color="#8800ff" style="background-color: #8800ff;"></div>
+                                <div class="color-option" data-color="#ffffff" style="background-color: #ffffff; border: 1px solid #ccc;"></div>
+                                <div class="color-option" data-color="#000000" style="background-color: #000000;"></div>
+                            </div>
+                            <div class="custom-color">
+                                <label for="customColor">Cor personalizada:</label>
+                                <input type="color" id="customColor" value="#ff0000">
+                            </div>
+                        </div>
+
+                        <div class="panel-section">
+                            <h3><i class="fas fa-sticky-note"></i> Adesivos</h3>
+                            <div class="sticker-upload">
+                                <label for="stickerFile" class="upload-btn">
+                                    <i class="fas fa-upload"></i> Enviar adesivo
+                                </label>
+                                <input type="file" id="stickerFile" accept="image/*" style="display: none;">
+                            </div>
+                            <div class="sticker-gallery">
+                                <div class="sticker-item" data-sticker="star">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="sticker-item" data-sticker="heart">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div class="sticker-item" data-sticker="bolt">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <div class="sticker-item" data-sticker="fire">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="sticker-item" data-sticker="rocket">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <div class="sticker-item" data-sticker="crown">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-section">
+                            <h3><i class="fas fa-cog"></i> Configurações</h3>
+                            <div class="config-option">
+                                <label for="bikeSize">Tamanho:</label>
+                                <select id="bikeSize">
+                                    <option value="small">Pequeno</option>
+                                    <option value="medium" selected>Médio</option>
+                                    <option value="large">Grande</option>
+                                </select>
+                            </div>
+                            <div class="config-option">
+                                <label for="bikeType">Tipo:</label>
+                                <select id="bikeType">
+                                    <option value="mountain">Mountain Bike</option>
+                                    <option value="road" selected>Road Bike</option>
+                                    <option value="city">City Bike</option>
+                                    <option value="bmx">BMX</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gallery" class="gallery">
+            <div class="container">
+                <h2 class="section-title">Galeria de Criações</h2>
+                <div class="gallery-grid" id="galleryGrid">
+                    <!-- As criações serão carregadas dinamicamente -->
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <div class="container">
+                <h2 class="section-title">Sobre o BikeMizer</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>O BikeMizer é uma plataforma inovadora que permite aos usuários personalizar suas bicicletas de forma única e criativa. Com nossa ferramenta de customização, você pode:</p>
+                        <ul>
+                            <li>Escolher entre milhares de cores</li>
+                            <li>Adicionar adesivos personalizados</li>
+                            <li>Visualizar em tempo real suas modificações</li>
+                            <li>Salvar e compartilhar suas criações</li>
+                        </ul>
+                        <p>Transforme sua bicicleta em uma obra de arte única!</p>
+                    </div>
+                    <div class="about-features">
+                        <div class="feature">
+                            <i class="fas fa-paint-brush"></i>
+                            <h4>Design Intuitivo</h4>
+                            <p>Interface fácil de usar para todos os níveis</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-eye"></i>
+                            <h4>Visualização em Tempo Real</h4>
+                            <p>Veja suas mudanças instantaneamente</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-share-alt"></i>
+                            <h4>Compartilhamento</h4>
+                            <p>Compartilhe suas criações com o mundo</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>BikeMizer</h4>
+                    <p>Transformando bicicletas em obras de arte</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links</h4>
+                    <a href="#customizer">Customizar</a>
+                    <a href="#gallery">Galeria</a>
+                    <a href="#about">Sobre</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Contato</h4>
+                    <p>contato@bikemizer.com</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 BikeMizer. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/bike-customizer.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html> 
