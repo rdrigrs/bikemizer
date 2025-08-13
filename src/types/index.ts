@@ -153,3 +153,27 @@ export interface AppConfig {
   defaultBikeType: BikeType;
   defaultBikeSize: BikeSize;
 } 
+
+// Tipos para o sistema de histórico
+export interface CustomizationHistory {
+  id: string;
+  bikeId: string;
+  version: number;
+  configuration: BikeConfiguration;
+  timestamp: Date;
+  description?: string;
+  isFavorite: boolean;
+}
+
+export interface HistoryComparison {
+  version1: CustomizationHistory;
+  version2: CustomizationHistory;
+  differences: CustomizationDifference[];
+}
+
+export interface CustomizationDifference {
+  field: 'color' | 'stickers' | 'type' | 'size';
+  oldValue: any;
+  newValue: any;
+  changeType: 'added' | 'removed' | 'modified';
+} 

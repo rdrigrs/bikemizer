@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { BikeType, BikeSize } from '@/types';
 
 interface BikeCanvasProps {
@@ -6,22 +6,23 @@ interface BikeCanvasProps {
   stickers: Array<{ type: string; x: number; y: number; size: number }>;
   bikeType: BikeType;
   bikeSize: BikeSize;
+  showGrid?: boolean;
+  showLabels?: boolean;
+  className?: string;
 }
 
 export const BikeCanvas: React.FC<BikeCanvasProps> = ({
   color,
   stickers,
   bikeType,
-  bikeSize
+  bikeSize,
+  showGrid = false,
+  showLabels = false,
+  className = ""
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
 
-  useEffect(() => {
-    drawBike();
-  }, [color, stickers, bikeType, bikeSize]);
-
-  const drawBike = () => {
+  const drawBike = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -30,6 +31,11 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
 
     // Limpar canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Desenhar grid se solicitado
+    if (showGrid) {
+      drawGrid(ctx, canvas.width, canvas.height);
+    }
 
     // Configurar escala baseada no tamanho
     let scale = 1;
@@ -50,6 +56,54 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
     
     // Desenhar adesivos
     drawStickers(ctx, stickers);
+
+    // Desenhar labels se solicitado
+    if (showLabels) {
+      drawLabels(ctx, centerX, centerY, scale);
+    }
+  }, [color, stickers, bikeType, bikeSize, showGrid, showLabels]);
+
+  useEffect(() => {
+    drawBike();
+  }, [drawBike]);
+
+  const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.3;
+
+    // Grid vertical
+    for (let x = 0; x <= width; x += 50) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+
+    // Grid horizontal
+    for (let y = 0; y <= height; y += 50) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    ctx.globalAlpha = 1.0;
+  };
+
+  const drawLabels = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, scale: number) => {
+    ctx.fillStyle = '#374151';
+    ctx.font = '12px Inter';
+    ctx.textAlign = 'center';
+    
+    // Label do tipo
+    ctx.fillText(bikeType.toUpperCase(), centerX, centerY - 140 * scale);
+    
+    // Label do tamanho
+    ctx.fillText(bikeSize.toUpperCase(), centerX, centerY + 120 * scale);
+    
+    // Label da cor
+    ctx.fillText(`#${color.replace('#', '')}`, centerX, centerY - 160 * scale);
   };
 
   const drawBikeBase = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, scale: number) => {
@@ -193,7 +247,7 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
   };
 
   return (
-    <div className="w-full">
+    <div className={`w-full ${className}`}>
       <canvas
         ref={canvasRef}
         width={600}

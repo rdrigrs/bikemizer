@@ -12,6 +12,10 @@ Uma aplicação web moderna para customização de bicicletas construída com **
 - **Galeria de Criações**: Salvar e compartilhar customizações
 - **Interface Responsiva**: Design mobile-first com Tailwind CSS
 - **Arquitetura SOLID**: Código limpo, testável e manutenível
+- **🆕 Sistema de Histórico**: Salvar, comparar e restaurar versões
+- **🆕 Estatísticas Avançadas**: Métricas e insights de customização
+- **🆕 Comparação Visual**: Comparar versões lado a lado
+- **🆕 Sistema de Favoritos**: Marcar versões preferidas
 
 ## 🏗️ **Arquitetura SOLID**
 
@@ -138,6 +142,24 @@ npm run preview
 - Visualização de criações salvas
 - Filtros por tipo, tamanho e cor
 - Sistema de busca e categorização
+
+### **🆕 CustomizationHistory**
+- Sistema completo de histórico de versões
+- Lista cronológica com previews
+- Controles de favoritos e exclusão
+- Restauração de versões anteriores
+
+### **🆕 CustomizationStats**
+- Estatísticas detalhadas de uso
+- Métricas de cores e tipos populares
+- Progresso de versões com insights
+- Análise de comportamento do usuário
+
+### **🆕 useCustomizationHistory**
+- Hook personalizado para gerenciar histórico
+- Lógica de comparação entre versões
+- Cálculos de estatísticas otimizados
+- Gerenciamento de estado persistente
 
 ## 🔧 **Configuração**
 

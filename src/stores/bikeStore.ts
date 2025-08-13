@@ -1,147 +1,107 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
-import { Bike, BikeConfiguration, BikeStore as IBikeStore } from '@/types';
-import { BikeService } from '@/services/BikeService';
+import { persist } from 'zustand/middleware';
+import { Bike, CustomizationHistory, BikeConfiguration } from '@/types';
 
-// Single Responsibility Principle - Esta store só gerencia estado de bicicletas
-export const useBikeStore = create<IBikeStore>()(
-  devtools(
+interface BikeStore {
+  bikes: Bike[];
+  currentBike: Bike | null;
+  customizationHistory: CustomizationHistory[];
+  isLoading: boolean;
+  error: string | null;
+  
+  // Actions básicas
+  setBikes: (bikes: Bike[]) => void;
+  setCurrentBike: (bike: Bike | null) => void;
+  addBike: (bike: Bike) => void;
+  updateBike: (id: string, updates: Partial<Bike>) => void;
+  deleteBike: (id: string) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  
+  // Actions para histórico
+  addToHistory: (configuration: BikeConfiguration, description?: string) => void;
+  removeFromHistory: (historyId: string) => void;
+  toggleFavorite: (historyId: string) => void;
+  clearHistory: () => void;
+  getHistoryForBike: (bikeId: string) => CustomizationHistory[];
+  getLatestVersion: (bikeId: string) => CustomizationHistory | null;
+}
+
+export const useBikeStore = create<BikeStore>()(
+  persist(
     (set, get) => ({
-      // State
       bikes: [],
       currentBike: null,
+      customizationHistory: [],
       isLoading: false,
       error: null,
-
-      // Actions
-      setBikes: (bikes: Bike[]) => set({ bikes }),
-
-      setCurrentBike: (bike: Bike | null) => set({ currentBike: bike }),
-
-      addBike: (bike: Bike) => set((state) => ({ 
-        bikes: [...state.bikes, bike] 
-      })),
-
-      updateBike: (id: string, updates: Partial<Bike>) => set((state) => ({
+      
+      setBikes: (bikes) => set({ bikes }),
+      setCurrentBike: (bike) => set({ currentBike: bike }),
+      addBike: (bike) => set((state) => ({ bikes: [...state.bikes, bike] })),
+      updateBike: (id, updates) => set((state) => ({
         bikes: state.bikes.map(bike => 
           bike.id === id ? { ...bike, ...updates } : bike
-        ),
-        currentBike: state.currentBike?.id === id 
-          ? { ...state.currentBike, ...updates }
-          : state.currentBike
+        )
       })),
-
-      deleteBike: (id: string) => set((state) => ({
-        bikes: state.bikes.filter(bike => bike.id !== id),
-        currentBike: state.currentBike?.id === id ? null : state.currentBike
+      deleteBike: (id) => set((state) => ({
+        bikes: state.bikes.filter(bike => bike.id !== id)
       })),
-
-      setLoading: (loading: boolean) => set({ isLoading: loading }),
-
-      setError: (error: string | null) => set({ error }),
-
-      // Async actions
-      createBike: async (config: BikeConfiguration) => {
-        try {
-          set({ isLoading: true, error: null });
-          const bikeService = new BikeService();
-          const newBike = await bikeService.createBike(config);
-          
-          get().addBike(newBike);
-          get().setCurrentBike(newBike);
-          get().setLoading(false);
-          
-          return newBike;
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-          get().setError(errorMessage);
-          get().setLoading(false);
-          throw error;
-        }
-      },
-
-      updateBikeAsync: async (id: string, config: Partial<BikeConfiguration>) => {
-        try {
-          set({ isLoading: true, error: null });
-          const bikeService = new BikeService();
-          const updatedBike = await bikeService.updateBike(id, config);
-          
-          get().updateBike(id, updatedBike);
-          get().setLoading(false);
-          
-          return updatedBike;
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-          get().setError(errorMessage);
-          get().setLoading(false);
-          throw error;
-        }
-      },
-
-      deleteBikeAsync: async (id: string) => {
-        try {
-          set({ isLoading: true, error: null });
-          const bikeService = new BikeService();
-          await bikeService.deleteBike(id);
-          
-          get().deleteBike(id);
-          get().setLoading(false);
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-          get().setError(errorMessage);
-          get().setLoading(false);
-          throw error;
-        }
-      },
-
-      loadBikes: async () => {
-        try {
-          set({ isLoading: true, error: null });
-          const bikeService = new BikeService();
-          const bikes = await bikeService.getAllBikes();
-          
-          get().setBikes(bikes);
-          get().setLoading(false);
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-          get().setError(errorMessage);
-          get().setLoading(false);
-        }
-      },
-
-      // Computed values
-      getBikeById: (id: string) => {
+      setLoading: (loading) => set({ isLoading: loading }),
+      setError: (error) => set({ error }),
+      
+      addToHistory: (configuration, description) => {
         const state = get();
-        return state.bikes.find(bike => bike.id === id) || null;
+        const bikeId = state.currentBike?.id || 'default';
+        const latestVersion = state.getLatestVersion(bikeId);
+        const newVersion = (latestVersion?.version || 0) + 1;
+        
+        const historyEntry: CustomizationHistory = {
+          id: `history_${Date.now()}`,
+          bikeId,
+          version: newVersion,
+          configuration,
+          timestamp: new Date(),
+          description: description || `Versão ${newVersion}`,
+          isFavorite: false,
+        };
+        
+        set((state) => ({
+          customizationHistory: [...state.customizationHistory, historyEntry]
+        }));
       },
-
-      getBikesByType: (type: string) => {
+      
+      removeFromHistory: (historyId) => set((state) => ({
+        customizationHistory: state.customizationHistory.filter(h => h.id !== historyId)
+      })),
+      
+      toggleFavorite: (historyId) => set((state) => ({
+        customizationHistory: state.customizationHistory.map(h => 
+          h.id === historyId ? { ...h, isFavorite: !h.isFavorite } : h
+        )
+      })),
+      
+      clearHistory: () => set({ customizationHistory: [] }),
+      
+      getHistoryForBike: (bikeId) => {
         const state = get();
-        return state.bikes.filter(bike => bike.type === type);
+        return state.customizationHistory
+          .filter(h => h.bikeId === bikeId)
+          .sort((a, b) => b.version - a.version);
       },
-
-      getBikesBySize: (size: string) => {
+      
+      getLatestVersion: (bikeId) => {
         const state = get();
-        return state.bikes.filter(bike => bike.size === size);
+        const bikeHistory = state.getHistoryForBike(bikeId);
+        return bikeHistory.length > 0 ? bikeHistory[0] : null;
       },
-
-      getBikesByColor: (color: string) => {
-        const state = get();
-        return state.bikes.filter(bike => bike.color === color);
-      },
-
-      // Utility methods
-      clearError: () => set({ error: null }),
-
-      reset: () => set({
-        bikes: [],
-        currentBike: null,
-        isLoading: false,
-        error: null
-      }),
     }),
     {
       name: 'bike-store',
+      partialize: (state) => ({ 
+        bikes: state.bikes, 
+        customizationHistory: state.customizationHistory 
+      }),
     }
   )
 ); 
