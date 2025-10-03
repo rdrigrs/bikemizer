@@ -1,17 +1,17 @@
-name: 🚀 CI/CD Pipeline Simplificado
+name: 🚀 CI/CD Pipeline - BikeMizer
 
 # Quando o pipeline deve executar
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main ]
 
 # Jobs que serão executados
 jobs:
-  # Job 1: Testes e Build
-  test-and-build:
-    name: 🧪 Testes e Build
+  # Job 1: Testes e Qualidade de Código
+  test:
+    name: 🧪 Testes e Qualidade
     runs-on: ubuntu-latest
     
     steps:
@@ -41,16 +41,98 @@ jobs:
       # 6. Executar testes
       - name: 🧪 Run tests
         run: npm run test
+
+  # Job 2: Análise de Segurança
+  security:
+    name: 🔒 Análise de Segurança
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      # 1. Checkout do código
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
       
-      # 7. Build da aplicação
+      # 2. Configurar Node.js
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      # 3. Instalar dependências
+      - name: 📦 Install dependencies
+        run: npm ci
+      
+      # 4. Análise de segurança com Snyk
+      - name: 🔒 Security scan with Snyk
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+      
+      # 5. Auditoria NPM
+      - name: 🔍 NPM Audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  # Job 3: Build e Deploy
+  build-and-deploy:
+    name: 🏗️ Build e Deploy
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      # 1. Checkout do código
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      # 2. Configurar Node.js
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      # 3. Instalar dependências
+      - name: 📦 Install dependencies
+        run: npm ci
+      
+      # 4. Build da aplicação
       - name: 🏗️ Build
         run: npm run build
       
-      # 8. Upload dos artefatos de build
+      # 5. Upload dos artefatos de build
       - name: 📤 Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-files
           path: dist/
           retention-days: 7
+      
+      # 6. Deploy para Vercel (opcional)
+      - name: 🚀 Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+          working-directory: dist/
+        continue-on-error: true
+      
+      # 7. Deploy alternativo para Netlify
+      - name: 🚀 Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2.0
+        with:
+          publish-dir: './dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        continue-on-error: true
 

@@ -294,11 +294,14 @@ Resposta:
 
 ```
 bikemizer/
-├── .github/workflows/ci.yml     # Pipeline CI/CD
-├── Dockerfile                   # Containerização
-├── docker-compose.yml          # Orquestração local
-├── .dockerignore               # Otimização Docker
-├── env.example                 # Variáveis de ambiente
+├── .github/
+│   ├── workflows/
+│   │   └── ci.yml              # Pipeline CI/CD
+│   ├── ISSUE_TEMPLATE/         # Templates de issues
+│   │   ├── bug_report.md       # Template para bugs
+│   │   └── feature_request.md  # Template para features
+│   ├── dependabot.yml          # Configuração do Dependabot
+│   └── pull_request_template.md # Template de PR
 ├── k8s/                        # Configurações Kubernetes
 │   ├── namespace.yaml          # Namespace isolado
 │   ├── configmap.yaml          # Configurações
@@ -309,12 +312,18 @@ bikemizer/
 ├── scripts/
 │   ├── deploy-minikube.sh      # Script de deploy Minikube
 │   └── security-scan.sh       # Script de análise de segurança
+├── Dockerfile                   # Containerização
+├── docker-compose.yml          # Orquestração local
+├── .dockerignore               # Otimização Docker
+├── env.example                 # Variáveis de ambiente
 ├── .snyk                       # Configuração Snyk
 └── reports/                    # Relatórios de segurança
     ├── npm-audit.json
     ├── snyk-test.json
     └── snyk-docker.json
 ```
+
+**Nota**: Arquivos de automação (Dependabot, templates) são mantidos como arquivos separados para funcionamento correto do GitHub.
 
 ### **Kubernetes com Minikube**
 
@@ -458,6 +467,158 @@ k8s/
 8. **Configurar Helm** para gerenciamento de pacotes
 9. **Implementar CI/CD** com GitHub Actions
 10. **Adicionar testes** de carga e stress
+
+## 🐙 **Configuração do GitHub**
+
+### **Setup Inicial do Repositório**
+
+#### **1. Criar Repositório**
+1. Acesse: https://github.com/new
+2. Nome: `bikemizer` ou `bikemizer-solid`
+3. Descrição: `Sistema de customização de bicicletas com arquitetura SOLID e React`
+4. Visibilidade: Public ou Private
+5. Initialize: ❌ NÃO marque nenhuma opção
+6. Clique: "Create repository"
+
+#### **2. Conectar Repositório Local**
+```bash
+# No diretório do projeto
+cd C:\Users\User\Desktop\bikemizer
+
+# Inicializar Git
+git init
+
+# Adicionar arquivos
+git add .
+
+# Primeiro commit
+git commit -m "feat: initial commit - BikeMizer with SOLID architecture"
+
+# Conectar ao GitHub (substitua USERNAME)
+git remote add origin https://github.com/USERNAME/bikemizer.git
+
+# Enviar para GitHub
+git push -u origin main
+```
+
+### **Configuração de Secrets**
+
+Vá em **Settings** → **Secrets and variables** → **Actions**:
+
+#### **Secrets Obrigatórios:**
+```bash
+# Snyk (análise de segurança)
+SNYK_TOKEN=snyk_token_aqui
+
+# Vercel (deploy)
+VERCEL_TOKEN=vercel_token_aqui
+ORG_ID=org_id_aqui
+PROJECT_ID=project_id_aqui
+
+# Netlify (alternativo)
+NETLIFY_AUTH_TOKEN=netlify_token_aqui
+NETLIFY_SITE_ID=site_id_aqui
+```
+
+### **Configuração do Snyk**
+
+#### **Obter Token:**
+```bash
+# Instalar Snyk
+npm install -g snyk
+
+# Autenticar
+snyk auth
+
+# Copiar token para SNYK_TOKEN no GitHub
+```
+
+### **Configuração de Deploy**
+
+#### **Opção A: Vercel**
+1. Acesse: https://vercel.com
+2. Login com GitHub
+3. Import: Selecione `bikemizer`
+4. Configurações:
+   - Framework: `Vite`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+5. Deploy e copiar tokens
+
+#### **Opção B: Netlify**
+1. Acesse: https://netlify.com
+2. Login com GitHub
+3. New site from Git: `bikemizer`
+4. Build settings:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+5. Deploy e copiar tokens
+
+### **Configuração de Proteção**
+
+#### **Branch Protection:**
+1. Settings → Branches
+2. Add rule para `main`:
+   - ✅ Require pull request reviews
+   - ✅ Require status checks to pass
+   - ✅ Require branches to be up to date
+   - ✅ Include administrators
+
+### **Templates e Configurações**
+
+Os seguintes arquivos de automação já estão configurados:
+
+#### **Arquivos Criados:**
+- **`.github/dependabot.yml`**: Atualização automática de dependências
+- **`.github/ISSUE_TEMPLATE/bug_report.md`**: Template para reportar bugs
+- **`.github/ISSUE_TEMPLATE/feature_request.md`**: Template para sugerir funcionalidades
+- **`.github/pull_request_template.md`**: Template para pull requests
+
+#### **Funcionalidades:**
+- ✅ **Dependabot**: Atualiza dependências npm e GitHub Actions semanalmente
+- ✅ **Issue Templates**: Formulários estruturados para bugs e features
+- ✅ **PR Template**: Checklist de qualidade para pull requests
+
+### **Labels Recomendadas**
+
+```
+🐛 bug - Algo não está funcionando
+✨ enhancement - Nova funcionalidade
+📚 documentation - Melhorias na documentação
+🎨 style - Mudanças de estilo
+♻️ refactor - Refatoração de código
+⚡ performance - Melhorias de performance
+✅ test - Testes
+🔧 build - Build e dependências
+🚀 deploy - Deploy
+🔒 security - Segurança
+```
+
+### **Comandos de Configuração**
+
+```bash
+# Adicionar configurações
+git add .
+
+# Commit das configurações
+git commit -m "ci: add GitHub configuration files
+
+- Add Dependabot configuration
+- Add issue templates
+- Add pull request template
+- Configure automated updates"
+
+# Enviar para GitHub
+git push origin main
+```
+
+### **Verificação da Configuração**
+
+1. **Actions**: Verificar se pipeline está rodando
+2. **Issues**: Testar templates de issue
+3. **Dependabot**: Verificar em Settings → Security
+4. **Secrets**: Confirmar todos configurados
+5. **Deploy**: Testar deploy automático
 
 ## 🔒 **Segurança**
 
