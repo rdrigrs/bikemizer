@@ -1,0 +1,17 @@
+# 🌐 Service NodePort para Acesso Externo - BikeMizer
+apiVersion: v1
+kind: Service
+metadata:
+  name: bikemizer-nodeport
+  namespace: default
+  labels:
+    app: bikemizer-app
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 3000
+      nodePort: 30080  # Porta externa fixa
+      protocol: TCP
+  selector:
+    app: bikemizer-app

@@ -1,0 +1,16 @@
+# 🌐 LoadBalancer Service para Acesso Externo - BikeMizer
+apiVersion: v1
+kind: Service
+metadata:
+  name: bikemizer-loadbalancer
+  namespace: default
+  labels:
+    app: bikemizer-app
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: bikemizer-app
