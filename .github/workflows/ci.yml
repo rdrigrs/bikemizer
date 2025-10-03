@@ -17,7 +17,7 @@ jobs:
     steps:
       # 1. Checkout do código
       - name: 📥 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # 2. Configurar Node.js
       - name: 🔧 Setup Node.js
@@ -51,7 +51,7 @@ jobs:
     steps:
       # 1. Checkout do código
       - name: 📥 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # 2. Configurar Node.js
       - name: 🔧 Setup Node.js
@@ -88,7 +88,7 @@ jobs:
     steps:
       # 1. Checkout do código
       - name: 📥 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # 2. Configurar Node.js
       - name: 🔧 Setup Node.js
