@@ -120,6 +120,160 @@ npm run preview
 - `npm run lint:fix` - Corrigir problemas de linting
 - `npm run test` - Executar testes
 - `npm run type-check` - Verificar tipos TypeScript
+- `npm run start` - Iniciar servidor Node.js
+- `npm run docker:build` - Build da imagem Docker
+- `npm run docker:run` - Executar container Docker
+- `npm run docker:up` - Executar com Docker Compose
+
+## 🐳 **DevOps e Deploy**
+
+### **Conceitos DevOps Implementados**
+
+Este projeto inclui uma estrutura DevOps completa para aprendizado prático:
+
+- **CI/CD Pipeline** com GitHub Actions
+- **Containerização** com Docker
+- **Orquestração** com Docker Compose
+- **Automação** de testes e build
+
+### **Pipeline CI/CD**
+
+O pipeline automático executa:
+1. **Checkout** do código
+2. **Setup** do Node.js
+3. **Instalação** de dependências
+4. **Type Check** TypeScript
+5. **Lint** do código
+6. **Testes** unitários
+7. **Build** da aplicação
+8. **Upload** de artefatos
+
+### **Docker**
+
+#### **Dockerfile Simplificado**
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+RUN mkdir -p /app/dist/uploads
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+#### **Docker Compose**
+```yaml
+version: '3.8'
+services:
+  bikemizer-app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - ./public/uploads:/app/dist/uploads
+    restart: unless-stopped
+```
+
+### **Comandos Docker**
+
+```bash
+# Build da imagem
+npm run docker:build
+
+# Executar container
+npm run docker:run
+
+# Executar com Docker Compose
+npm run docker:up
+
+# Comandos Docker diretos
+docker build -t bikemizer-app .
+docker run -p 3000:3000 bikemizer-app
+docker-compose up --build
+```
+
+### **Variáveis de Ambiente**
+
+Copie `env.example` para `.env` e configure:
+
+```env
+# Ambiente
+NODE_ENV=development
+PORT=3000
+
+# Upload de arquivos
+UPLOAD_MAX_SIZE=10485760
+UPLOAD_PATH=./public/uploads
+
+# CORS
+CORS_ORIGIN=http://localhost:3000
+```
+
+### **Deploy**
+
+#### **Desenvolvimento Local**
+```bash
+# Com Node.js
+npm run dev
+
+# Com Docker
+npm run docker:up
+```
+
+#### **Produção**
+```bash
+# Build e deploy
+npm run build
+npm run start
+
+# Com Docker
+npm run docker:build
+npm run docker:run
+```
+
+### **Monitoramento**
+
+O projeto inclui endpoint de health check:
+```bash
+curl http://localhost:3000/health
+```
+
+Resposta:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "uptime": 123.456,
+  "memory": { "rss": 123456, "heapTotal": 123456, "heapUsed": 123456 },
+  "version": "2.0.0"
+}
+```
+
+### **Estrutura DevOps**
+
+```
+bikemizer/
+├── .github/workflows/ci.yml     # Pipeline CI/CD
+├── Dockerfile                   # Containerização
+├── docker-compose.yml          # Orquestração local
+├── .dockerignore               # Otimização Docker
+└── env.example                 # Variáveis de ambiente
+```
+
+### **Próximos Passos DevOps**
+
+1. **Configurar secrets** no GitHub
+2. **Implementar banco de dados** (PostgreSQL)
+3. **Adicionar cache** (Redis)
+4. **Configurar monitoramento** (Prometheus/Grafana)
+5. **Implementar logs centralizados** (ELK Stack)
+6. **Configurar SSL/TLS**
+7. **Implementar backup automático**
 
 ## 🎨 **Componentes Principais**
 
@@ -248,6 +402,26 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 - [ ] **AI Integration**: Sugestões inteligentes
 - [ ] **3D Rendering**: Visualização 3D das bicicletas
 
+## ❓ **FAQ DevOps**
+
+### **Por que usar containers?**
+R: Containers garantem consistência entre ambientes (dev/prod), isolamento da aplicação e facilidade de deploy.
+
+### **O que é um pipeline CI/CD?**
+R: É uma sequência automatizada de etapas que executa testes, build e deploy sempre que há mudanças no código.
+
+### **Como funciona o Docker Compose?**
+R: O Docker Compose permite definir e executar múltiplos containers com um único comando, ideal para desenvolvimento local.
+
+### **O que é o endpoint /health?**
+R: É um endpoint de monitoramento que retorna o status da aplicação, usado por load balancers e ferramentas de monitoramento.
+
+### **Como configurar deploy automático?**
+R: Configure os secrets no GitHub (VERCEL_TOKEN, NETLIFY_AUTH_TOKEN) e o pipeline fará deploy automático na branch main.
+
+### **Qual a diferença entre desenvolvimento e produção?**
+R: Desenvolvimento usa `npm run dev` com hot reload, produção usa `npm run build` + `npm run start` ou Docker.
+
 ---
 
-**Desenvolvido com ❤️ seguindo princípios SOLID e Clean Architecture**
+**Desenvolvido com ❤️ seguindo princípios SOLID, Clean Architecture e DevOps**

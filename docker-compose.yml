@@ -1,0 +1,18 @@
+# 🐳 Docker Compose para BikeMizer - Versão Simplificada
+version: '3.8'
+
+services:
+  # Aplicação principal
+  bikemizer-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - ./public/uploads:/app/dist/uploads
+    restart: unless-stopped
+

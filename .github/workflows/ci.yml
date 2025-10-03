@@ -1,0 +1,56 @@
+name: 🚀 CI/CD Pipeline Simplificado
+
+# Quando o pipeline deve executar
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Jobs que serão executados
+jobs:
+  # Job 1: Testes e Build
+  test-and-build:
+    name: 🧪 Testes e Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Checkout do código
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      # 2. Configurar Node.js
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      # 3. Instalar dependências
+      - name: 📦 Install dependencies
+        run: npm ci
+      
+      # 4. Verificar tipos TypeScript
+      - name: 🔍 Type check
+        run: npm run type-check
+      
+      # 5. Executar linter
+      - name: 🧹 Lint
+        run: npm run lint
+      
+      # 6. Executar testes
+      - name: 🧪 Run tests
+        run: npm run test
+      
+      # 7. Build da aplicação
+      - name: 🏗️ Build
+        run: npm run build
+      
+      # 8. Upload dos artefatos de build
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+          retention-days: 7
+
