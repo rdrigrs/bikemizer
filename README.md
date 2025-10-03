@@ -121,9 +121,20 @@ npm run preview
 - `npm run test` - Executar testes
 - `npm run type-check` - Verificar tipos TypeScript
 - `npm run start` - Iniciar servidor Node.js
+
+#### **Docker**
 - `npm run docker:build` - Build da imagem Docker
 - `npm run docker:run` - Executar container Docker
 - `npm run docker:up` - Executar com Docker Compose
+
+#### **Kubernetes**
+- `npm run k8s:start` - Iniciar no Minikube
+- `npm run k8s:stop` - Parar aplicação
+- `npm run k8s:restart` - Reiniciar aplicação
+- `npm run k8s:status` - Ver status
+- `npm run k8s:logs` - Ver logs
+- `npm run k8s:dashboard` - Dashboard Minikube
+- `npm run k8s:tunnel` - Tunnel para acesso externo
 
 ## 🐳 **DevOps e Deploy**
 
@@ -262,7 +273,67 @@ bikemizer/
 ├── Dockerfile                   # Containerização
 ├── docker-compose.yml          # Orquestração local
 ├── .dockerignore               # Otimização Docker
-└── env.example                 # Variáveis de ambiente
+├── env.example                 # Variáveis de ambiente
+├── k8s/                        # Configurações Kubernetes
+│   ├── namespace.yaml          # Namespace isolado
+│   ├── configmap.yaml          # Configurações
+│   ├── secret.yaml             # Dados sensíveis
+│   ├── deployment.yaml         # Deployment + Service + PVC
+│   ├── ingress.yaml            # Acesso externo
+│   └── hpa.yaml               # Auto-scaling
+├── scripts/
+│   └── deploy-minikube.sh      # Script de deploy Minikube
+└── MINIKUBE.md                 # Guia Minikube
+```
+
+### **Kubernetes com Minikube**
+
+#### **Configuração Completa**
+- **Deployment** com 2 replicas
+- **Service** ClusterIP para comunicação interna
+- **Ingress** com NGINX para acesso externo
+- **ConfigMap** para configurações
+- **Secret** para dados sensíveis
+- **PersistentVolumeClaim** para uploads
+- **HorizontalPodAutoscaler** para escalabilidade
+
+#### **Comandos Kubernetes**
+```bash
+# Scripts automatizados
+npm run k8s:start     # Iniciar no Minikube
+npm run k8s:stop      # Parar aplicação
+npm run k8s:status    # Ver status
+npm run k8s:logs      # Ver logs
+npm run k8s:dashboard # Dashboard Minikube
+
+# Comandos kubectl
+kubectl get pods
+kubectl get services
+kubectl get ingress
+kubectl logs -f deployment/bikemizer-app
+```
+
+#### **Acesso à Aplicação**
+```bash
+# URL local
+http://bikemizer.local
+
+# Via IP do Minikube
+http://$(minikube ip)
+
+# Health check
+curl http://bikemizer.local/health
+```
+
+#### **Estrutura Kubernetes**
+```
+k8s/
+├── namespace.yaml      # Namespace isolado
+├── configmap.yaml      # Configurações
+├── secret.yaml         # Dados sensíveis
+├── deployment.yaml     # Deployment + Service + PVC
+├── ingress.yaml        # Acesso externo
+└── hpa.yaml           # Auto-scaling
 ```
 
 ### **Próximos Passos DevOps**
@@ -274,6 +345,9 @@ bikemizer/
 5. **Implementar logs centralizados** (ELK Stack)
 6. **Configurar SSL/TLS**
 7. **Implementar backup automático**
+8. **Configurar Helm** para gerenciamento de pacotes
+9. **Implementar CI/CD** com GitHub Actions
+10. **Adicionar testes** de carga e stress
 
 ## 🎨 **Componentes Principais**
 
@@ -413,6 +487,12 @@ R: É uma sequência automatizada de etapas que executa testes, build e deploy s
 ### **Como funciona o Docker Compose?**
 R: O Docker Compose permite definir e executar múltiplos containers com um único comando, ideal para desenvolvimento local.
 
+### **O que é Kubernetes?**
+R: Kubernetes é uma plataforma de orquestração de containers que automatiza deploy, escalabilidade e gerenciamento de aplicações.
+
+### **Por que usar Minikube?**
+R: Minikube permite executar Kubernetes localmente para desenvolvimento e aprendizado, sem precisar de um cluster completo.
+
 ### **O que é o endpoint /health?**
 R: É um endpoint de monitoramento que retorna o status da aplicação, usado por load balancers e ferramentas de monitoramento.
 
@@ -420,7 +500,13 @@ R: É um endpoint de monitoramento que retorna o status da aplicação, usado po
 R: Configure os secrets no GitHub (VERCEL_TOKEN, NETLIFY_AUTH_TOKEN) e o pipeline fará deploy automático na branch main.
 
 ### **Qual a diferença entre desenvolvimento e produção?**
-R: Desenvolvimento usa `npm run dev` com hot reload, produção usa `npm run build` + `npm run start` ou Docker.
+R: Desenvolvimento usa `npm run dev` com hot reload, produção usa `npm run build` + `npm run start` ou Docker/Kubernetes.
+
+### **Como escalar a aplicação no Kubernetes?**
+R: Use `kubectl scale deployment bikemizer-app --replicas=5` ou configure HPA para escalabilidade automática.
+
+### **Como acessar a aplicação no Minikube?**
+R: Use `http://bikemizer.local` após configurar o /etc/hosts ou `http://$(minikube ip)` diretamente.
 
 ---
 

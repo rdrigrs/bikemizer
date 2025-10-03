@@ -1,0 +1,9 @@
+# ☸️ Kubernetes Namespace - BikeMizer
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bikemizer
+  labels:
+    name: bikemizer
+    app: bikemizer
+    environment: development

@@ -1,0 +1,100 @@
+# ☸️ Kubernetes Deployment - BikeMizer para Minikube
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bikemizer-app
+  labels:
+    app: bikemizer
+    version: v2.0.0
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bikemizer
+  template:
+    metadata:
+      labels:
+        app: bikemizer
+        version: v2.0.0
+    spec:
+      containers:
+      - name: bikemizer-app
+        image: bikemizer-app:latest
+        imagePullPolicy: Never  # Para Minikube usar imagem local
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: bikemizer-config
+              key: node_env
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: bikemizer-config
+              key: port
+        - name: UPLOAD_MAX_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: bikemizer-config
+              key: upload_max_size
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/dist/uploads
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: bikemizer-uploads-pvc
+---
+# ☸️ Kubernetes Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: bikemizer-service
+  labels:
+    app: bikemizer
+spec:
+  selector:
+    app: bikemizer
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+  type: ClusterIP
+---
+# ☸️ Kubernetes PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bikemizer-uploads-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard  # Minikube default storage class
