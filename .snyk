@@ -1,0 +1,99 @@
+# 🔒 Configuração do Snyk - BikeMizer
+# Arquivo de configuração para análise de segurança
+
+# Políticas de segurança
+policy: |
+  # Ignorar vulnerabilidades específicas (se necessário)
+  # Exemplo: ignore vulnerabilities específicas por ID
+  # - id: SNYK-JS-LODASH-567746
+  #   reason: "Lodash vulnerability não afeta nossa aplicação"
+  #   expires: "2024-12-31T23:59:59.000Z"
+
+# Configurações de teste
+test:
+  # Severidade mínima para falhar o teste
+  severity-threshold: "medium"
+  
+  # Arquivos para ignorar
+  ignore:
+    - "node_modules/**"
+    - "dist/**"
+    - "coverage/**"
+    - "*.log"
+  
+  # Tipos de vulnerabilidades para incluir
+  include:
+    - "vulnerabilities"
+    - "licenses"
+    - "code"
+
+# Configurações de monitoramento
+monitor:
+  # Projeto no Snyk
+  project-name: "bikemizer"
+  
+  # Tags para organização
+  tags:
+    - "frontend"
+    - "react"
+    - "typescript"
+    - "nodejs"
+  
+  # Configurações de notificação
+  notifications:
+    - "email"
+    - "slack"
+
+# Configurações de Docker
+docker:
+  # Base image para análise
+  base-image: "node:20-alpine"
+  
+  # Arquivos para incluir na análise
+  include:
+    - "Dockerfile"
+    - "package.json"
+    - "package-lock.json"
+  
+  # Configurações de scan
+  scan:
+    # Severidade mínima
+    severity-threshold: "medium"
+    
+    # Incluir vulnerabilidades de desenvolvimento
+    dev-dependencies: true
+    
+    # Análise de código
+    code-analysis: true
+
+# Configurações de CI/CD
+ci:
+  # Falhar build se vulnerabilidades encontradas
+  fail-on-issues: true
+  
+  # Severidade para falhar
+  severity-threshold: "high"
+  
+  # Relatório em formato JSON
+  json: true
+  
+  # Arquivo de saída
+  output-file: "snyk-results.json"
+
+# Configurações de licenças
+licenses:
+  # Verificar licenças
+  check: true
+  
+  # Licenças permitidas
+  allowed:
+    - "MIT"
+    - "Apache-2.0"
+    - "BSD-3-Clause"
+    - "ISC"
+  
+  # Licenças proibidas
+  forbidden:
+    - "GPL-2.0"
+    - "GPL-3.0"
+    - "AGPL-3.0"

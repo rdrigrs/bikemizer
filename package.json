@@ -21,7 +21,17 @@
     "k8s:status": "./scripts/deploy-minikube.sh status",
     "k8s:logs": "./scripts/deploy-minikube.sh logs",
     "k8s:dashboard": "./scripts/deploy-minikube.sh dashboard",
-    "k8s:tunnel": "./scripts/deploy-minikube.sh tunnel"
+    "k8s:tunnel": "./scripts/deploy-minikube.sh tunnel",
+    "security:test": "snyk test",
+    "security:test:docker": "snyk container test bikemizer-app:latest",
+    "security:monitor": "snyk monitor",
+    "security:monitor:docker": "snyk container monitor bikemizer-app:latest",
+    "security:fix": "snyk wizard",
+    "security:audit": "npm audit && snyk test",
+    "security:scan": "./scripts/security-scan.sh test",
+    "security:scan:docker": "./scripts/security-scan.sh docker",
+    "security:scan:full": "./scripts/security-scan.sh audit",
+    "security:report": "./scripts/security-scan.sh report"
   },
   "keywords": ["bicicleta", "customização", "react", "typescript", "solid", "clean-architecture"],
   "author": "BikeMizer",
@@ -57,6 +67,7 @@
     "tailwindcss": "^3.3.0",
     "typescript": "^5.0.0",
     "vite": "^4.4.0",
-    "vitest": "^0.34.0"
+    "vitest": "^0.34.0",
+    "snyk": "^1.1248.0"
   }
 } 

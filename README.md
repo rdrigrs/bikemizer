@@ -136,6 +136,16 @@ npm run preview
 - `npm run k8s:dashboard` - Dashboard Minikube
 - `npm run k8s:tunnel` - Tunnel para acesso externo
 
+#### **Segurança**
+- `npm run security:test` - Testar vulnerabilidades
+- `npm run security:test:docker` - Testar imagem Docker
+- `npm run security:monitor` - Monitorar no Snyk
+- `npm run security:fix` - Wizard de correção
+- `npm run security:scan` - Scan completo
+- `npm run security:scan:docker` - Scan Docker
+- `npm run security:scan:full` - Auditoria completa
+- `npm run security:report` - Gerar relatórios
+
 ## 🐳 **DevOps e Deploy**
 
 ### **Conceitos DevOps Implementados**
@@ -149,15 +159,30 @@ Este projeto inclui uma estrutura DevOps completa para aprendizado prático:
 
 ### **Pipeline CI/CD**
 
-O pipeline automático executa:
+O pipeline automático executa em **3 jobs paralelos**:
+
+#### **Job 1: Testes e Qualidade** 🧪
 1. **Checkout** do código
 2. **Setup** do Node.js
 3. **Instalação** de dependências
 4. **Type Check** TypeScript
 5. **Lint** do código
 6. **Testes** unitários
-7. **Build** da aplicação
-8. **Upload** de artefatos
+
+#### **Job 2: Análise de Segurança** 🔒
+1. **Checkout** do código
+2. **Setup** do Node.js
+3. **Instalação** de dependências
+4. **Scan Snyk** de vulnerabilidades
+5. **Auditoria NPM** de segurança
+
+#### **Job 3: Build e Deploy** 🏗️
+1. **Checkout** do código
+2. **Setup** do Node.js
+3. **Instalação** de dependências
+4. **Build** da aplicação
+5. **Upload** de artefatos
+6. **Deploy** para Vercel/Netlify (apenas main)
 
 ### **Docker**
 
@@ -282,8 +307,13 @@ bikemizer/
 │   ├── ingress.yaml            # Acesso externo
 │   └── hpa.yaml               # Auto-scaling
 ├── scripts/
-│   └── deploy-minikube.sh      # Script de deploy Minikube
-└── MINIKUBE.md                 # Guia Minikube
+│   ├── deploy-minikube.sh      # Script de deploy Minikube
+│   └── security-scan.sh       # Script de análise de segurança
+├── .snyk                       # Configuração Snyk
+└── reports/                    # Relatórios de segurança
+    ├── npm-audit.json
+    ├── snyk-test.json
+    └── snyk-docker.json
 ```
 
 ### **Kubernetes com Minikube**
@@ -325,6 +355,86 @@ http://$(minikube ip)
 curl http://bikemizer.local/health
 ```
 
+### **Guia Completo do Minikube**
+
+#### **Pré-requisitos**
+```bash
+# Instalar Minikube
+# Linux
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+# macOS
+brew install minikube
+
+# Windows
+choco install minikube
+
+# Instalar kubectl
+# Linux
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# macOS
+brew install kubectl
+
+# Windows
+choco install kubernetes-cli
+```
+
+#### **Início Rápido**
+```bash
+# 1. Iniciar Minikube
+minikube start --driver=docker --memory=4096 --cpus=2
+
+# 2. Deploy da aplicação
+npm run k8s:start
+
+# 3. Acessar aplicação
+echo "$(minikube ip) bikemizer.local" | sudo tee -a /etc/hosts
+open http://bikemizer.local
+```
+
+#### **Comandos Úteis**
+```bash
+# Status do cluster
+minikube status
+
+# IP do cluster
+minikube ip
+
+# Dashboard
+minikube dashboard
+
+# Tunnel para acesso externo
+minikube tunnel
+
+# Parar cluster
+minikube stop
+
+# Deletar cluster
+minikube delete
+```
+
+#### **Troubleshooting**
+```bash
+# Pod não inicia
+kubectl get events --sort-by=.metadata.creationTimestamp
+kubectl describe pod <pod-name>
+
+# Imagem não encontrada
+eval $(minikube docker-env)
+docker build -t bikemizer-app:latest .
+
+# Ingress não funciona
+minikube addons list | grep ingress
+minikube addons enable ingress
+
+# DNS não resolve
+cat /etc/hosts | grep bikemizer
+echo "$(minikube ip) bikemizer.local" | sudo tee -a /etc/hosts
+```
+
 #### **Estrutura Kubernetes**
 ```
 k8s/
@@ -348,6 +458,104 @@ k8s/
 8. **Configurar Helm** para gerenciamento de pacotes
 9. **Implementar CI/CD** com GitHub Actions
 10. **Adicionar testes** de carga e stress
+
+## 🔒 **Segurança**
+
+### **Análise de Vulnerabilidades**
+
+O projeto inclui análise completa de segurança com **Snyk**:
+
+- **Dependências**: Scan de vulnerabilidades em npm packages
+- **Docker**: Análise de vulnerabilidades em imagens
+- **Código**: Detecção de vulnerabilidades no código
+- **Licenças**: Verificação de compatibilidade de licenças
+
+### **Integração CI/CD**
+
+```yaml
+# Job separado para análise de segurança
+security:
+  name: 🔒 Análise de Segurança
+  needs: test
+  
+  steps:
+    - name: 🔒 Security scan with Snyk
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+    
+    - name: 🔍 NPM Audit
+      run: npm audit --audit-level=high
+```
+
+### **Comandos de Segurança**
+
+```bash
+# Teste de vulnerabilidades
+npm run security:test
+
+# Teste de imagem Docker
+npm run security:test:docker
+
+# Monitoramento contínuo
+npm run security:monitor
+
+# Correção automática
+npm run security:fix
+
+# Auditoria completa
+npm run security:scan:full
+```
+
+### **Políticas de Segurança**
+
+- **Severidade**: Falha em HIGH/CRITICAL
+- **Licenças**: Apenas MIT, Apache-2.0, BSD-3-Clause
+- **Atualizações**: Automáticas para patches de segurança
+- **Monitoramento**: Contínuo via Snyk
+
+### **Estrutura de Segurança**
+
+```
+bikemizer/
+├── .snyk                    # Configuração Snyk
+├── scripts/
+│   └── security-scan.sh     # Script de análise
+└── reports/                 # Relatórios de segurança
+    ├── npm-audit.json
+    ├── snyk-test.json
+    └── snyk-docker.json
+```
+
+### **Políticas de Segurança Detalhadas**
+
+#### **Severidade Mínima**
+- **Falha no CI/CD**: Vulnerabilidades HIGH e CRITICAL
+- **Aviso**: Vulnerabilidades MEDIUM
+- **Ignorar**: Vulnerabilidades LOW (com justificativa)
+
+#### **Licenças Permitidas**
+- ✅ MIT, Apache-2.0, BSD-3-Clause, ISC, Unlicense
+- ❌ GPL-2.0, GPL-3.0, AGPL-3.0, Copyleft licenses
+
+#### **Processo de Correção**
+1. **Detecção**: `npm run security:scan`
+2. **Análise**: Verificar severidade e impacto
+3. **Correção**: `npm run security:fix`
+4. **Validação**: Testes e deploy
+
+#### **Monitoramento**
+- **CI/CD**: A cada commit
+- **Dependências**: Diariamente
+- **Imagens Docker**: Semanalmente
+- **Relatórios**: Mensalmente
+
+#### **Resposta a Incidentes**
+- **CRITICAL**: Correção em 4 horas
+- **HIGH**: Correção em 72 horas
+- **MEDIUM**: Correção em 2 semanas
 
 ## 🎨 **Componentes Principais**
 
@@ -507,6 +715,18 @@ R: Use `kubectl scale deployment bikemizer-app --replicas=5` ou configure HPA pa
 
 ### **Como acessar a aplicação no Minikube?**
 R: Use `http://bikemizer.local` após configurar o /etc/hosts ou `http://$(minikube ip)` diretamente.
+
+### **Como funciona a análise de segurança?**
+R: O Snyk analisa dependências, código e imagens Docker em busca de vulnerabilidades, integrado ao CI/CD.
+
+### **O que fazer quando encontrar vulnerabilidades?**
+R: Use `npm run security:fix` para correção automática ou `npm run security:scan:full` para análise completa.
+
+### **Como configurar o Snyk?**
+R: Execute `npm install -g snyk && snyk auth` e configure o token `SNYK_TOKEN` no GitHub.
+
+### **Qual a diferença entre npm audit e Snyk?**
+R: npm audit é básico e rápido, Snyk é mais completo com análise de código e imagens Docker.
 
 ---
 
