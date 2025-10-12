@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, memo } from 'react';
 import { BikeType, BikeSize } from '@/types';
 
 interface BikeCanvasProps {
@@ -11,7 +11,7 @@ interface BikeCanvasProps {
   className?: string;
 }
 
-export const BikeCanvas: React.FC<BikeCanvasProps> = ({
+const BikeCanvasComponent: React.FC<BikeCanvasProps> = ({
   color,
   stickers,
   bikeType,
@@ -107,10 +107,13 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
   };
 
   const drawBikeBase = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, scale: number) => {
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 3;
+    // Configurar estilo para linhas mais suaves
+    ctx.strokeStyle = '#1f2937';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    // Quadro principal
+    // Quadro principal com cantos arredondados
     ctx.beginPath();
     ctx.moveTo(centerX - 80 * scale, centerY - 40 * scale);
     ctx.lineTo(centerX + 80 * scale, centerY - 40 * scale);
@@ -119,10 +122,10 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
     ctx.closePath();
     ctx.stroke();
 
-    // Tubo superior
+    // Tubo superior com curva mais suave
     ctx.beginPath();
     ctx.moveTo(centerX - 80 * scale, centerY - 40 * scale);
-    ctx.lineTo(centerX - 40 * scale, centerY - 80 * scale);
+    ctx.quadraticCurveTo(centerX - 60 * scale, centerY - 60 * scale, centerX - 40 * scale, centerY - 80 * scale);
     ctx.stroke();
 
     // Tubo do selim
@@ -134,39 +137,66 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
     // Tubo do guidão
     ctx.beginPath();
     ctx.moveTo(centerX + 80 * scale, centerY - 40 * scale);
-    ctx.lineTo(centerX + 100 * scale, centerY - 80 * scale);
+    ctx.quadraticCurveTo(centerX + 90 * scale, centerY - 60 * scale, centerX + 100 * scale, centerY - 80 * scale);
     ctx.stroke();
 
-    // Rodas
+    // Rodas com mais detalhes
     drawWheel(ctx, centerX - 60 * scale, centerY + 60 * scale, 30 * scale);
     drawWheel(ctx, centerX + 60 * scale, centerY + 60 * scale, 30 * scale);
 
-    // Selim
-    ctx.fillStyle = '#333';
-    ctx.fillRect(centerX - 25 * scale, centerY - 120 * scale, 10 * scale, 5 * scale);
+    // Selim com design melhorado
+    ctx.fillStyle = '#374151';
+    ctx.beginPath();
+    ctx.ellipse(centerX - 20 * scale, centerY - 120 * scale, 8 * scale, 4 * scale, 0, 0, 2 * Math.PI);
+    ctx.fill();
 
-    // Guidão
-    ctx.fillRect(centerX + 95 * scale, centerY - 85 * scale, 10 * scale, 5 * scale);
+    // Guidão com design melhorado
+    ctx.beginPath();
+    ctx.ellipse(centerX + 100 * scale, centerY - 80 * scale, 8 * scale, 4 * scale, 0, 0, 2 * Math.PI);
+    ctx.fill();
 
-    // Pedais
-    ctx.fillRect(centerX - 5 * scale, centerY + 55 * scale, 10 * scale, 5 * scale);
+    // Pedais com design melhorado
+    ctx.fillStyle = '#4b5563';
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY + 55 * scale, 6 * scale, 3 * scale, 0, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Corrente
+    ctx.strokeStyle = '#6b7280';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(centerX - 20 * scale, centerY - 20 * scale);
+    ctx.lineTo(centerX + 20 * scale, centerY - 20 * scale);
+    ctx.stroke();
   };
 
   const drawWheel = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: number) => {
-    // Aro da roda
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2;
+    // Aro da roda com gradiente
+    const gradient = ctx.createRadialGradient(x, y, radius - 5, x, y, radius);
+    gradient.addColorStop(0, '#f3f4f6');
+    gradient.addColorStop(1, '#9ca3af');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Aro externo
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.stroke();
 
-    // Raios da roda
-    for (let i = 0; i < 8; i++) {
-      const angle = (i * Math.PI) / 4;
-      const startX = x + Math.cos(angle) * 5;
-      const startY = y + Math.sin(angle) * 5;
-      const endX = x + Math.cos(angle) * radius;
-      const endY = y + Math.sin(angle) * radius;
+    // Raios da roda com design melhorado
+    ctx.strokeStyle = '#6b7280';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 12; i++) {
+      const angle = (i * Math.PI) / 6;
+      const startX = x + Math.cos(angle) * 3;
+      const startY = y + Math.sin(angle) * 3;
+      const endX = x + Math.cos(angle) * (radius - 2);
+      const endY = y + Math.sin(angle) * (radius - 2);
       
       ctx.beginPath();
       ctx.moveTo(startX, startY);
@@ -174,19 +204,56 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
       ctx.stroke();
     }
 
-    // Pneu
-    ctx.strokeStyle = '#666';
-    ctx.lineWidth = 4;
+    // Centro da roda
+    ctx.fillStyle = '#4b5563';
     ctx.beginPath();
-    ctx.arc(x, y, radius + 2, 0, 2 * Math.PI);
+    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Pneu com textura
+    ctx.strokeStyle = '#1f2937';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 3, 0, 2 * Math.PI);
     ctx.stroke();
+
+    // Detalhes do pneu
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI) / 4;
+      const startX = x + Math.cos(angle) * (radius + 1);
+      const startY = y + Math.sin(angle) * (radius + 1);
+      const endX = x + Math.cos(angle) * (radius + 5);
+      const endY = y + Math.sin(angle) * (radius + 5);
+      
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+    }
   };
 
   const applyColor = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, scale: number) => {
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.8;
+    // Criar gradiente para dar profundidade à cor
+    const gradient = ctx.createLinearGradient(
+      centerX - 80 * scale, centerY - 40 * scale,
+      centerX + 80 * scale, centerY + 60 * scale
+    );
     
-    // Preencher áreas da bicicleta
+    // Adicionar variação de cor para simular iluminação
+    const baseColor = color;
+    const lighterColor = adjustColorBrightness(baseColor, 20);
+    const darkerColor = adjustColorBrightness(baseColor, -20);
+    
+    gradient.addColorStop(0, lighterColor);
+    gradient.addColorStop(0.5, baseColor);
+    gradient.addColorStop(1, darkerColor);
+    
+    ctx.fillStyle = gradient;
+    ctx.globalAlpha = 0.9;
+    
+    // Preencher áreas da bicicleta com formas mais suaves
     ctx.beginPath();
     ctx.moveTo(centerX - 80 * scale, centerY - 40 * scale);
     ctx.lineTo(centerX + 80 * scale, centerY - 40 * scale);
@@ -195,12 +262,12 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
     ctx.closePath();
     ctx.fill();
 
-    // Tubo superior
+    // Tubo superior com gradiente
     ctx.beginPath();
     ctx.moveTo(centerX - 80 * scale, centerY - 40 * scale);
-    ctx.lineTo(centerX - 40 * scale, centerY - 80 * scale);
+    ctx.quadraticCurveTo(centerX - 60 * scale, centerY - 60 * scale, centerX - 40 * scale, centerY - 80 * scale);
     ctx.lineTo(centerX - 35 * scale, centerY - 75 * scale);
-    ctx.lineTo(centerX - 75 * scale, centerY - 35 * scale);
+    ctx.quadraticCurveTo(centerX - 55 * scale, centerY - 55 * scale, centerX - 75 * scale, centerY - 35 * scale);
     ctx.closePath();
     ctx.fill();
 
@@ -216,19 +283,42 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
     // Tubo do guidão
     ctx.beginPath();
     ctx.moveTo(centerX + 80 * scale, centerY - 40 * scale);
-    ctx.lineTo(centerX + 100 * scale, centerY - 80 * scale);
+    ctx.quadraticCurveTo(centerX + 90 * scale, centerY - 60 * scale, centerX + 100 * scale, centerY - 80 * scale);
     ctx.lineTo(centerX + 95 * scale, centerY - 75 * scale);
-    ctx.lineTo(centerX + 75 * scale, centerY - 35 * scale);
+    ctx.quadraticCurveTo(centerX + 85 * scale, centerY - 55 * scale, centerX + 75 * scale, centerY - 35 * scale);
     ctx.closePath();
     ctx.fill();
 
     ctx.globalAlpha = 1.0;
   };
 
+  // Função auxiliar para ajustar brilho da cor
+  const adjustColorBrightness = (color: string, percent: number): string => {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+      (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+      (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+  };
+
   const drawStickers = (ctx: CanvasRenderingContext2D, stickers: Array<{ type: string; x: number; y: number; size: number }>) => {
     stickers.forEach(sticker => {
-      ctx.fillStyle = '#ffd700';
-      ctx.font = `${sticker.size}px Arial`;
+      // Adicionar sombra ao adesivo
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      
+      // Cor do adesivo com gradiente
+      const gradient = ctx.createRadialGradient(sticker.x, sticker.y, 0, sticker.x, sticker.y, sticker.size);
+      gradient.addColorStop(0, '#ffd700');
+      gradient.addColorStop(1, '#ffed4e');
+      
+      ctx.fillStyle = gradient;
+      ctx.font = `bold ${sticker.size}px Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       
@@ -243,6 +333,12 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
       }
       
       ctx.fillText(icon, sticker.x, sticker.y);
+      
+      // Resetar sombra
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     });
   };
 
@@ -257,4 +353,23 @@ export const BikeCanvas: React.FC<BikeCanvasProps> = ({
       />
     </div>
   );
-}; 
+};
+
+// Memoizar o componente para evitar re-renderizações desnecessárias
+export const BikeCanvas = memo(BikeCanvasComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.color === nextProps.color &&
+    prevProps.bikeType === nextProps.bikeType &&
+    prevProps.bikeSize === nextProps.bikeSize &&
+    prevProps.showGrid === nextProps.showGrid &&
+    prevProps.showLabels === nextProps.showLabels &&
+    prevProps.className === nextProps.className &&
+    prevProps.stickers.length === nextProps.stickers.length &&
+    prevProps.stickers.every((sticker, index) => 
+      sticker.type === nextProps.stickers[index]?.type &&
+      sticker.x === nextProps.stickers[index]?.x &&
+      sticker.y === nextProps.stickers[index]?.y &&
+      sticker.size === nextProps.stickers[index]?.size
+    )
+  );
+}); 
